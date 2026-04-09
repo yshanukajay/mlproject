@@ -5,3 +5,16 @@ mlproject.egg-info/SOURCES.txt
 mlproject.egg-info/dependency_links.txt
 mlproject.egg-info/top_level.txt
 src/__init__.py
+src/components/__init__.py
+src/components/data_ingestion.py
+src/components/data_transformation.py
+src/components/model_trainer.py
+src/exceptions/__init__.py
+src/exceptions/exception.py
+src/loggers/__init__.py
+src/loggers/logger.py
+src/pipelines/__init__.py
+src/pipelines/prediction_pipeline.py
+src/pipelines/train_pipeline.py
+src/utils/__init__.py
+src/utils/utils.py
