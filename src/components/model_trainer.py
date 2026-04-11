@@ -12,7 +12,6 @@ from sklearn.ensemble import (
 from sklearn.svm import SVR
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-from sklearn.model_selection import RandomizedSearchCV
 from catboost import CatBoostRegressor
 from xgboost import XGBRegressor
 import warnings
@@ -57,13 +56,49 @@ class ModelTrainer:
                 "AdaBoost Regressor": AdaBoostRegressor()
             }
 
+            params = {
+                "Random Forest": {
+                    "n_estimators": [100, 200],
+                    "max_depth": [None, 10, 20]
+                },
+                "Decision Tree": {
+                    "criterion": ["squared_error", "friedman_mse", "absolute_error"],
+                    "max_depth": [None, 10, 20]
+                },
+                "Gradient Boosting": {
+                    "n_estimators": [100, 200],
+                    "learning_rate": [0.05, 0.1],
+                    "max_depth": [3, 5]
+                },
+                "Linear Regression": {},
+                "K-Neighbors Regressor": {
+                    "n_neighbors": [3, 5, 7],
+                    "weights": ["uniform", "distance"]
+                },
+                "XGBRegressor": {
+                    "n_estimators": [100, 200],
+                    "learning_rate": [0.05, 0.1],
+                    "max_depth": [3, 5]
+                },
+                "CatBoosting Regressor": {
+                    "depth": [4, 6],
+                    "learning_rate": [0.05, 0.1],
+                    "iterations": [100, 200]
+                },
+                "AdaBoost Regressor": {
+                    "n_estimators": [50, 100],
+                    "learning_rate": [0.05, 0.1, 1.0]
+                }
+            }
+
             logging.info("Evaluating the models")
             model_report: dict=evaluate_models(
                 X_train=X_train, 
                 y_train=y_train, 
                 X_test=X_test, 
                 y_test=y_test, 
-                models=models
+                models=models,
+                params=params
             )   
 
             logging.info("Evaluation is completed. Extracting the best model from the report")
