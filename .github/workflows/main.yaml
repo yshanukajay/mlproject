@@ -1,6 +1,5 @@
 name: workflow
 
-
 on:
   push:
     branches:
@@ -30,8 +29,6 @@ jobs:
     name: Continuous Delivery
     needs: integration
     runs-on: ubuntu-latest
-    outputs:
-      image: ${{ steps.build-image.outputs.image }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -82,29 +79,28 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Debug ECR image URI
+      - name: Debug ECR images
         run: |
-          echo "Using image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest"
+          aws ecr list-images --repository-name ${{ secrets.ECR_REPOSITORY_NAME }}
+
+      - name: Clean old Docker data before pull
+        run: |
+          docker stop mltest || true
+          docker rm -f mltest || true
+          docker system prune -a -f --volumes
+          docker builder prune -a -f
 
       - name: Pull latest image
         run: |
           docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
 
-      - name: Stop and remove old container if running
-        run: |
-          docker ps -q --filter "name=mltest" | grep -q . && docker stop mltest && docker rm -fv mltest || true
-
       - name: Run Docker Image to serve users
         run: |
           docker run -d \
-            -p 8080:8080 \
+            -p 8080:8000 \
             --ipc="host" \
             --name mltest \
             -e AWS_ACCESS_KEY_ID='${{ secrets.AWS_ACCESS_KEY_ID }}' \
             -e AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_ACCESS_KEY }}' \
             -e AWS_REGION='${{ secrets.AWS_REGION }}' \
             ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
-
-      - name: Clean previous images and containers
-        run: |
-          docker system prune -f
